@@ -30,7 +30,7 @@ class PaymentServiceTest {
 
     @Test
     void validUntil() {
-        PaymentService paymentService = new PaymentService(new ExRateProviderStub(valueOf(1_000)), clock);
+        PaymentService paymentService = new PaymentService(new ExRateProviderStub(valueOf(1_000)), this.clock);
 
         Payment payment = paymentService.prepare(1L, "USD", BigDecimal.TEN);
 
