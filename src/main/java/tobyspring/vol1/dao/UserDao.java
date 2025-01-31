@@ -17,12 +17,14 @@ public class UserDao {
 
   }
   public void setDataSource(DataSource dataSource) {
+    this.jdbcContext = new JdbcContext();
+    this.jdbcContext.setDataSource(dataSource);
     this.dataSource = dataSource;
   }
 
-  public void setJdbcContext(JdbcContext jdbcContext) {
-    this.jdbcContext = jdbcContext;
-  }
+//  public void setJdbcContext(JdbcContext jdbcContext) {
+//    this.jdbcContext = jdbcContext;
+//  }
 
 
 
@@ -43,7 +45,7 @@ public class UserDao {
     }
 
     StatementStrategy st = new AddStatement();
-    jdbcContextWithStatementStrategy(st);
+//    jdbcContextWithStatementStrategy(st);
   }
 
   // 익명 클래스로 구현
