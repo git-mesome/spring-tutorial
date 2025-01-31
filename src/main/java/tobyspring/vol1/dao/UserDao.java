@@ -11,29 +11,55 @@ import java.sql.SQLException;
 
 public class UserDao {
   private DataSource dataSource;
+  private JdbcContext jdbcContext;
 
   public UserDao() {
 
   }
-
-  public void setDataSource(final DataSource dataSource) {
+  public void setDataSource(DataSource dataSource) {
     this.dataSource = dataSource;
   }
 
-  public void add(User user) throws SQLException {
-    Connection c = this.dataSource.getConnection();
-
-    PreparedStatement ps = c.prepareStatement(
-        "insert into users(id, name, password) values(?,?,?)");
-    ps.setString(1, user.getId());
-    ps.setString(2, user.getName());
-    ps.setString(3, user.getPassword());
-
-    ps.executeUpdate();
-
-    ps.close();
-    c.close();
+  public void setJdbcContext(JdbcContext jdbcContext) {
+    this.jdbcContext = jdbcContext;
   }
+
+
+
+  // 로컬 클래스로 구현
+  public void addLocalClass(final User user) throws SQLException {
+    class AddStatement implements StatementStrategy {
+
+      @Override
+      public PreparedStatement makePreparedStatement(final Connection c) throws SQLException {
+        PreparedStatement ps = c.prepareStatement(
+            "insert into users(id, name, password) values(?,?,?)");
+        ps.setString(1, user.getId());
+        ps.setString(2, user.getName());
+        ps.setString(3, user.getPassword());
+        return ps;
+      }
+
+    }
+
+    StatementStrategy st = new AddStatement();
+    jdbcContextWithStatementStrategy(st);
+  }
+
+  // 익명 클래스로 구현
+  public void add(final User user) throws SQLException {
+
+    this.jdbcContext.workWithStatementStrategy(c -> {
+      PreparedStatement ps = c.prepareStatement(
+          "insert into users(id, name, password) values(?,?,?)");
+      ps.setString(1, user.getId());
+      ps.setString(2, user.getName());
+      ps.setString(3, user.getPassword());
+      return ps;
+    });
+
+  }
+
 
   public User get(String id) throws ClassNotFoundException, SQLException {
     Connection c = this.dataSource.getConnection();
@@ -63,14 +89,9 @@ public class UserDao {
   }
 
   public void deleteAll() throws SQLException {
-
-    Connection c = dataSource.getConnection();
-
-    PreparedStatement ps = c.prepareStatement("delete from users");
-    ps.executeUpdate();
-
-    ps.close();
-    c.close();
+    this.jdbcContext.workWithStatementStrategy(
+        c -> c.prepareStatement("delete from users")
+    );
 
   }
 
