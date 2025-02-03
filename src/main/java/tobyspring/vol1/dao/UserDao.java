@@ -16,6 +16,7 @@ public class UserDao {
   public UserDao() {
 
   }
+
   public void setDataSource(DataSource dataSource) {
     this.jdbcContext = new JdbcContext();
     this.jdbcContext.setDataSource(dataSource);
@@ -25,7 +26,6 @@ public class UserDao {
 //  public void setJdbcContext(JdbcContext jdbcContext) {
 //    this.jdbcContext = jdbcContext;
 //  }
-
 
 
   // 로컬 클래스로 구현
@@ -51,14 +51,14 @@ public class UserDao {
   // 익명 클래스로 구현
   public void add(final User user) throws SQLException {
 
-    this.jdbcContext.workWithStatementStrategy(c -> {
-      PreparedStatement ps = c.prepareStatement(
-          "insert into users(id, name, password) values(?,?,?)");
-      ps.setString(1, user.getId());
-      ps.setString(2, user.getName());
-      ps.setString(3, user.getPassword());
-      return ps;
-    });
+    this.jdbcContext.executeSqlWithParams
+        ("insert into users(id, name, password) values(?,?,?)",
+            user.getId(), user.getName(), user.getPassword()
+        );
+  }
+
+
+  private void extracted(final User user) throws SQLException {
 
   }
 
@@ -91,9 +91,7 @@ public class UserDao {
   }
 
   public void deleteAll() throws SQLException {
-    this.jdbcContext.workWithStatementStrategy(
-        c -> c.prepareStatement("delete from users")
-    );
+    this.jdbcContext.executeSql("delete from users");
 
   }
 
