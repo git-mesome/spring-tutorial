@@ -10,7 +10,7 @@
 		<property name="password" value="1LOls91VintrU45" />
 	</bean>
 
-	<bean id="userDao" class="tobyspring.vol1.dao.UserDao">
+	<bean id="userDao" class="tobyspring.vol1.dao.UserDaoJdbc">
 		<property name="dataSource" ref="dataSource" />
 	</bean>
 	<bean id="jdbcContext" class="tobyspring.vol1.dao.JdbcContext">

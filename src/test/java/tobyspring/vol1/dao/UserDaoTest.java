@@ -4,21 +4,31 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
+import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.context.ContextConfiguration;
 import tobyspring.vol1.domain.User;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ContextConfiguration(locations = "/applicationContext.xml")
 class UserDaoTest {
 
   @Autowired
-  private UserDao dao;
+  private UserDaoJdbc dao;
+  @Autowired
+  private DataSource dataSource;
 
   private User user1;
   private User user2;
@@ -101,15 +111,52 @@ class UserDaoTest {
     assertThat(user1.getPassword(), is(user2.getPassword()));
   }
 
-  //  @Test(expected = EmptyResultDataAccessException.class)
-  //  public void getUserFailure() throws SQLException {
-  //
-  //
-  //    dao.deleteAll();
-  //    assertThat(dao.getCount(), is(0));
-  //
-  //    dao.get("unknown_id");
-  //  }
+  @Test
+  public void getUserFailure() throws SQLException {
+
+
+    dao.deleteAll();
+    assertThat(dao.getCount(), is(0));
+
+    assertThrows(EmptyResultDataAccessException.class, () ->
+    {
+      dao.get("unknown_id");
+    });
+
+  }
+
+  @Test
+  public void duplicateKey() {
+    dao.deleteAll();
+
+    dao.add(user1);
+    assertThrows(DuplicateKeyException.class, () ->
+    {
+      dao.add(user1);
+    });
+
+  }
+
+  @Test
+  public void sqlExceptionTranslate() {
+    dao.deleteAll();
+
+    try {
+      dao.add(user1);
+      dao.add(user1);
+    }
+    catch (DuplicateKeyException e) {
+      SQLException sqlEx = (SQLException) e.getRootCause();
+      SQLExceptionTranslator set = new SQLErrorCodeSQLExceptionTranslator(this.dataSource);
+
+      // 예외 변환
+      DataAccessException translatedEx = set.translate(null, null, sqlEx);
+
+      // 변환된 예외가 DuplicateKeyException인지 검증
+      assertThat(translatedEx, instanceOf(DuplicateKeyException.class));
+
+    }
+  }
 
 }
 
