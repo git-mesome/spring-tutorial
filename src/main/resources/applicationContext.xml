@@ -19,6 +19,10 @@
     </bean>
 
     <bean id="userService" class="tobyspring.vol1.service.UserService">
-        <property name="userDao" ref="userDao"/>
+        <constructor-arg ref="userDao"/>
+        <constructor-arg ref="userLevelUpgradePolicy"/>
+    </bean>
+
+    <bean id="userLevelUpgradePolicy" class="tobyspring.vol1.service.DefaultUserLevelUpgradePolicy">
     </bean>
 </beans>

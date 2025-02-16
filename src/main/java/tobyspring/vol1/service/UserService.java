@@ -6,11 +6,14 @@ import tobyspring.vol1.domain.User;
 
 import java.util.List;
 
-public class UserService {
-  UserDao userDao;
+public class UserService  {
 
-  public void setUserDao(UserDao userDao) {
+  UserDao userDao;
+  UserLevelUpgradePolicy upgradePolicy;
+
+  public UserService (final UserDao userDao, final UserLevelUpgradePolicy upgradePolicy) {
     this.userDao = userDao;
+    this.upgradePolicy = upgradePolicy;
   }
 
   public void upgradeLevels() {
@@ -18,31 +21,12 @@ public class UserService {
 
     for (final User user : users) {
 
-      if (canUpgradeLevel(user)) {
-        user.upgradeLevel();
+      if (upgradePolicy.canUpgradeLevel(user)) {
+        upgradePolicy.upgradeLevels(user);
         userDao.update(user);
-
       }
 
     }
-  }
-
-  private static Boolean canUpgradeLevel(final User user) {
-    final Level currentLevel = user.getLevel();
-
-    switch (currentLevel) {
-      case BASIC -> {
-        return user.getLogin() >= 50;
-      }
-      case SILVER -> {
-        return user.getRecommend() >= 30;
-      }
-      case GOLD -> {
-        return false;
-      }
-      default -> throw new IllegalArgumentException("Unknown Level value: " + currentLevel);
-    }
-
   }
 
 
