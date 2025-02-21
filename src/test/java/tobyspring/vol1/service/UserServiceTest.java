@@ -32,13 +32,13 @@ class UserServiceTest {
 
   @BeforeEach
   void setUp() {
-    users = List.of(new User("bumjin", "박범진", "p1", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER-1, 0),
-                    // silver 승급
-                    new User("joytouch", "강명성", "p2", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER, 0),
-                    new User("erwins", "신승한", "p3", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD-1),
-                    // gold 승급
-                    new User("madnite1", "이상호", "p4", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD),
-                    new User("green", "오민규", "p5", Level.GOLD, 100, Integer.MAX_VALUE));
+    users = List.of(new User("bumjin", "박범진", "p1", "a@email.com", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER - 1, 0),
+        // silver 승급
+        new User("joytouch", "강명성", "p2", "b@email.com", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER, 0),
+        new User("erwins", "신승한", "p3", "c@email.com", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD - 1),
+        // gold 승급
+        new User("madnite1", "이상호", "p4", "d@email.com", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD),
+        new User("green", "오민규", "p5", "e@email.com", Level.GOLD, 100, Integer.MAX_VALUE));
 
     upgradePolicy = new DefaultUserLevelUpgradePolicy();
     userService.setUserLevelUpgradePolicy(upgradePolicy);
@@ -49,7 +49,7 @@ class UserServiceTest {
     userDao.deleteAll();
 
     final UserService testUserService = new TestUserService(users.get(3)
-                                                                     .getId());
+        .getId());
     testUserService.setUserDao(this.userDao);
     testUserService.setTransactionManager(transactionManager);
     testUserService.setUserLevelUpgradePolicy(upgradePolicy);
@@ -58,10 +58,10 @@ class UserServiceTest {
       userDao.add(user);
     }
 
-    try{
+    try {
       testUserService.upgradeLevels();
       fail("TestUserServiceException expected");
-    }catch (TestUserServiceException e){
+    } catch (TestUserServiceException e) {
       e.getMessage();
     }
 
@@ -93,7 +93,7 @@ class UserServiceTest {
 
     if (upgraded) {
       assertThat(userUpdate.getLevel()).isEqualTo(user.getLevel()
-                                                      .nextLevel());
+          .nextLevel());
     } else {
       assertThat(userUpdate.getLevel()).isEqualTo(user.getLevel());
     }

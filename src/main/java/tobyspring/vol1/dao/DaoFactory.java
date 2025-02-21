@@ -14,7 +14,7 @@ public class DaoFactory {
     SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
 
     dataSource.setDriverClass(org.postgresql.Driver.class);
-    dataSource.setUrl("jdbc:postgresql://127.0.0.1:15432/springbook");
+    dataSource.setUrl("jdbc:postgresql://127.0.0.1:15431/springbook");
     dataSource.setUsername("postgres");
     dataSource.setPassword("1LOls91VintrU45");
 

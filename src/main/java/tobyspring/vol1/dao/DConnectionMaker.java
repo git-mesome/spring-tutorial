@@ -10,7 +10,7 @@ public class DConnectionMaker implements ConnectionMaker {
     Class.forName("org.postgresql.Driver");
 
     return DriverManager.getConnection(
-        "jdbc:postgresql://127.0.0.1:15432/springbook", "postgres", "1LOls91VintrU45");
+        "jdbc:postgresql://127.0.0.1:15431/springbook", "postgres", "1LOls91VintrU45");
   }
 
 }

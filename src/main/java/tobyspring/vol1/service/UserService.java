@@ -1,6 +1,5 @@
 package tobyspring.vol1.service;
 
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -8,7 +7,6 @@ import tobyspring.vol1.dao.UserDao;
 import tobyspring.vol1.domain.Level;
 import tobyspring.vol1.domain.User;
 
-import javax.sql.DataSource;
 import java.util.List;
 
 public class UserService  {
@@ -51,6 +49,7 @@ public class UserService  {
       this.transactionManager.rollback(status);
       throw e;
     }
+
   }
 
 
