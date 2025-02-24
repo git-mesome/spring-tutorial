@@ -22,6 +22,7 @@
         <property name="userDao" ref="userDao"/>
         <property name="userLevelUpgradePolicy" ref="userLevelUpgradePolicy"/>
         <property name="transactionManager" ref="transactionManager"/>
+        <property name="mailSender" ref="mailSender"/>
     </bean>
 
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
@@ -30,4 +31,9 @@
 
     <bean id="userLevelUpgradePolicy" class="tobyspring.vol1.service.DefaultUserLevelUpgradePolicy">
     </bean>
+    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="mail.server.com"/>
+    </bean>
+    <bean id="mailSender2" class="tobyspring.vol1.service.UserServiceTest$DummyMailSender"/>
+
 </beans>
