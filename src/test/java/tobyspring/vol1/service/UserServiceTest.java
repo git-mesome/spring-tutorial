@@ -28,7 +28,7 @@ import static tobyspring.vol1.service.DefaultUserLevelUpgradePolicy.MIN_RECOMMEN
 class UserServiceTest {
 
   @Autowired
-  private UserService userService;
+  private UserServiceImpl userServiceImpl;
   List<User> users;
   @Autowired
   private UserDaoJdbc userDao;
@@ -49,26 +49,30 @@ class UserServiceTest {
         new User("green", "오민규", "p5", "e@email.com", Level.GOLD, 100, Integer.MAX_VALUE));
 
     upgradePolicy = new DefaultUserLevelUpgradePolicy();
-    userService.setUserLevelUpgradePolicy(upgradePolicy);
+    userServiceImpl.setUserLevelUpgradePolicy(upgradePolicy);
   }
 
   @Test
   public void upgradeAllOrNothing() throws Exception {
-    userDao.deleteAll();
 
-    final UserService testUserService = new TestUserService(users.get(3)
-        .getId());
+    final TestUserServiceImpl testUserService = new TestUserServiceImpl(users.get(3).getId());
+
     testUserService.setUserDao(this.userDao);
-    testUserService.setTransactionManager(transactionManager);
-    testUserService.setUserLevelUpgradePolicy(upgradePolicy);
+    testUserService.setUserLevelUpgradePolicy(this.upgradePolicy);
     testUserService.setMailSender(this.mailSender);
+
+    UserServiceTx userServiceTx = new UserServiceTx();
+    userServiceTx.setTransactionManager(transactionManager);
+    userServiceTx.setUserService(userServiceTx);
+
+    userDao.deleteAll();
 
     for (User user : users) {
       userDao.add(user);
     }
 
     try {
-      testUserService.upgradeLevels();
+      userServiceTx.upgradeLevels();
       fail("TestUserServiceException expected");
     } catch (TestUserServiceException e) {
       e.getMessage();
@@ -88,9 +92,9 @@ class UserServiceTest {
     }
 
     MockMailSender mockMailSender = new MockMailSender();
-    userService.setMailSender(mockMailSender);
+    userServiceImpl.setMailSender(mockMailSender);
 
-    userService.upgradeLevels();
+    userServiceImpl.upgradeLevels();
 
     checkLevel(users.get(0), false);
     checkLevel(users.get(1), true);
@@ -126,8 +130,8 @@ class UserServiceTest {
     final User userWithoutLevel = users.get(0); // 레벨이 비어있는 사용자, BASIC 초기화 필요
     userWithoutLevel.setLevel(null);
 
-    userService.add(userWithLevel);
-    userService.add(userWithoutLevel);
+    userServiceImpl.add(userWithLevel);
+    userServiceImpl.add(userWithoutLevel);
 
     final User userWithLevelRead = userDao.get(userWithLevel.getId());
     final User userWithoutLevelRead = userDao.get(userWithoutLevel.getId());
@@ -137,15 +141,15 @@ class UserServiceTest {
 
   }
 
-  static class TestUserService extends UserService {
+  static class TestUserServiceImpl extends UserServiceImpl {
     private final String failUserId;
 
-    public TestUserService(String failUserId) {
+    public TestUserServiceImpl(String failUserId) {
       this.failUserId = failUserId;
     }
 
     @Override
-    protected void upgradeLevels() throws Exception {
+    public void upgradeLevels()   {
       if (failUserId.equals("madnite1")) {
         throw new TestUserServiceException();
       }
