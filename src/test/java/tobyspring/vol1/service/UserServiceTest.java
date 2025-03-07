@@ -3,6 +3,7 @@ package tobyspring.vol1.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
@@ -96,7 +97,7 @@ class UserServiceTest {
     testUserService.setUserLevelUpgradePolicy(this.upgradePolicy);
     testUserService.setMailSender(this.mailSender);
 
-    TxProxyFactoryBean txProxyFactoryBean = applicationContext.getBean("&userServiceTx", TxProxyFactoryBean.class);
+    ProxyFactoryBean txProxyFactoryBean = applicationContext.getBean("&userService", ProxyFactoryBean.class);
     txProxyFactoryBean.setTarget(testUserService);
 
     UserService txUserService = (UserService) txProxyFactoryBean.getObject();
