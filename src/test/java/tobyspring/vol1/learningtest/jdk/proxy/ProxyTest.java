@@ -4,12 +4,14 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactoryBean;
+import org.springframework.aop.support.DefaultPointcutAdvisor;
+import org.springframework.aop.support.NameMatchMethodPointcut;
 
 import java.lang.reflect.Proxy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DynamicProxyTest {
+public class ProxyTest {
 
   @Test
   void simpleTest() {
@@ -60,5 +62,22 @@ public class DynamicProxyTest {
       String ret = (String) invocation.proceed();
       return ret.toUpperCase();
     }
+  }
+
+  @Test
+  void pointCutAdvisor() {
+    ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+    proxyFactoryBean.setTarget(new HelloTarget());
+
+    NameMatchMethodPointcut pointcut = new NameMatchMethodPointcut();
+    pointcut.setMappedName("sayH*");
+
+    proxyFactoryBean.addAdvisor(new DefaultPointcutAdvisor(pointcut, new UppercaseAdvice()));
+
+    Hello proxiedHello = (Hello) proxyFactoryBean.getObject();
+    assertThat(proxiedHello.sayHello("Toby")).isEqualTo("HELLO TOBY");
+    assertThat(proxiedHello.sayHi("Toby")).isEqualTo("HI TOBY");
+    assertThat(proxiedHello.sayThankYou("Toby")).isEqualTo("Thank you Toby");
+
   }
 }
