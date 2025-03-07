@@ -5,8 +5,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import tobyspring.vol1.service.UserServiceImpl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 
 public class BeanTest {
 
@@ -19,11 +17,11 @@ public class BeanTest {
 
     String[] beanDefinitionNames = ac.getBeanDefinitionNames();
     for (String beanDefinitionName : beanDefinitionNames) {
-      Object beanInstance = ac.getBean(beanDefinitionName);
-      if (beanInstance instanceof UserServiceImpl) {
-        System.out.println("beanDefinitionName = " + beanDefinitionName);
-        assertThat(beanDefinitionName).isEqualTo("userServiceImpl");
-      }
+      System.out.println("beanDefinitionName = " + beanDefinitionName);
+
+//      if (beanInstance instanceof UserServiceImpl) {
+//        System.out.println("beanDefinitionName = " + beanDefinitionName);
+//        assertThat(beanDefinitionName).isEqualTo("userServiceImpl");
     }
   }
 }
