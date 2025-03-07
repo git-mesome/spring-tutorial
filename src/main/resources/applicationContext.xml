@@ -18,18 +18,21 @@
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
+    <!--타깃-->
     <bean id="userServiceImpl" class="tobyspring.vol1.service.UserServiceImpl">
         <property name="userDao" ref="userDao"/>
         <property name="userLevelUpgradePolicy" ref="userLevelUpgradePolicy"/>
         <property name="mailSender" ref="mailSender"/>
     </bean>
 
-    <bean id="userServiceTx" class="tobyspring.vol1.service.UserServiceTx">
+    <!--데코레이터-->
+    <bean id="userServiceTx" class="tobyspring.vol1.service.TxProxyFactoryBean">
         <property name="transactionManager" ref="transactionManager"/>
-        <property name="userService" ref="userServiceImpl"/>
+        <property name="target" ref="userServiceImpl"/>
+        <property name="pattern" value="upgradeLevels"/>
+        <property name="serviceInterface" value="tobyspring.vol1.service.UserService"/>
 
     </bean>
-
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>
     </bean>

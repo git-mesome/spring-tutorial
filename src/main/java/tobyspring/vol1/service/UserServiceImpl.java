@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public void upgradeLevels() {
+  public void upgradeLevels()  {
     final List<User> users = userDao.getAll();
 
     for (final User user : users) {
