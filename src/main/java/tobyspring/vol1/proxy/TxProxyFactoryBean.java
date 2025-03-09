@@ -1,4 +1,4 @@
-package tobyspring.vol1.service;
+package tobyspring.vol1.proxy;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;

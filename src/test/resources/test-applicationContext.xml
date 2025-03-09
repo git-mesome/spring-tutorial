@@ -10,10 +10,48 @@
 		<property name="password" value="1LOls91VintrU45"/>
 	</bean>
 
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
 	<bean id="userDao" class="tobyspring.vol1.dao.UserDaoJdbc">
 		<property name="dataSource" ref="dataSource" />
 	</bean>
 	<bean id="message" class="tobyspring.vol1.learningtest.bean.factory.MessageFactoryBean">
 		<property name="text" value="Factory Bean"/>
 	</bean>
+
+	<bean id="userLevelUpgradePolicy" class="tobyspring.vol1.service.DefaultUserLevelUpgradePolicy"/>
+
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="mail.server.com"/>
+	</bean>
+
+	<bean id="mailSender2" class="tobyspring.vol1.service.UserServiceTest$DummyMailSender"/>
+
+	<!--타깃-->
+	<bean id="userService" class="tobyspring.vol1.service.UserServiceImpl">
+		<property name="userDao" ref="userDao"/>
+		<property name="userLevelUpgradePolicy" ref="userLevelUpgradePolicy"/>
+		<property name="mailSender" ref="mailSender"/>
+	</bean>
+
+	<bean id="testUserService" class="tobyspring.vol1.service.UserServiceTest$TestUserServiceImpl"
+		  parent="userService"/>
+
+	<bean id="transactionAdvice" class="tobyspring.vol1.proxy.TransactionAdvice">
+		<property name="transactionManager" ref="transactionManager"/>
+	</bean>
+
+	<bean id="transactionPointcut" class="tobyspring.vol1.proxy.NameMatchClassMethodPointcut">
+		<property name="mappedClassName" value="*ServiceImpl"/>
+		<property name="mappedName" value="upgrade*"/>
+	</bean>
+
+	<bean id="transactionAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
+		<property name="advice" ref="transactionAdvice"/>
+		<property name="pointcut" ref="transactionPointcut"/>
+	</bean>
+
+	<bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
 </beans>

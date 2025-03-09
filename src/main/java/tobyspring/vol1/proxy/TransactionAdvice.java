@@ -1,4 +1,4 @@
-package tobyspring.vol1.service;
+package tobyspring.vol1.proxy;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
