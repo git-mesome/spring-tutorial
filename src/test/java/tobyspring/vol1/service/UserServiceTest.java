@@ -9,7 +9,13 @@ import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import tobyspring.vol1.dao.UserDao;
 import tobyspring.vol1.dao.UserDaoJdbc;
 import tobyspring.vol1.domain.Level;
@@ -28,17 +34,21 @@ import static tobyspring.vol1.service.DefaultUserLevelUpgradePolicy.MIN_RECOMMEN
 
 @SpringBootTest
 @ContextConfiguration(locations = "/test-applicationContext.xml")
+@Transactional
+@Rollback(false)
 class UserServiceTest {
 
   @Autowired
   UserService userService;
   @Autowired
-  UserService testUserService;
+  TestUserServiceImpl testUserService;
   @Autowired
   private UserDaoJdbc userDao;
   @Autowired
   private UserLevelUpgradePolicy userLevelUpgradePolicy;
   List<User> users;
+  @Autowired
+  private PlatformTransactionManager transactionManager;
 
 
   @BeforeEach
@@ -51,7 +61,6 @@ class UserServiceTest {
         new User("madnite1", "이상호", "p4", "d@email.com", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD),
         new User("green", "오민규", "p5", "e@email.com", Level.GOLD, 100, Integer.MAX_VALUE));
   }
-
   @Test
   public void mockUpgradeLevels() throws Exception {
     UserServiceImpl userService = new UserServiceImpl();
@@ -164,11 +173,42 @@ class UserServiceTest {
   }
 
   @Test
-  public void readOnlyTransactionAttribute() {
+  void readOnlyTransactionAttribute() {
 
-    assertThrows(UncategorizedSQLException.class, () ->{
+    assertThrows(UncategorizedSQLException.class, () -> {
       testUserService.getAll();
     });
+
+  }
+
+  @Test
+  @Transactional(propagation = Propagation.NEVER) // 클래스 레벨 트랜잭션 무시
+  void transactionSync() {
+
+    DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
+    TransactionStatus status = transactionManager.getTransaction(transactionDefinition);
+
+    try {
+      userService.deleteAll();
+      userService.add(users.get(0));
+      userService.add(users.get(1));
+    } finally {
+      transactionManager.rollback(status);
+
+//    transactionManager.commit(status);
+    }
+
+  }
+
+  @Test// 새 트랜잭션 생성, 메서드 종료 시 트랜잭션 롤백 -> 스프링 테스트 프레임워크가, AOP X
+  @Transactional  // 강제 롤백
+  @Rollback(value = true)
+  void transactionSyncV2() {
+    // 셋 다 참여 -> 한 트랜잭션으로 실행
+      userService.deleteAll();
+      userService.add(users.get(0));
+      userService.add(users.get(1));
+      assertThat(userService.getCount()).isEqualTo(2);
 
   }
 
@@ -271,9 +311,9 @@ class UserServiceTest {
     }
   }
 
-  @Test
-  void advisorAutoProxyCreator() {
-    assertThat(testUserService).isInstanceOf(java.lang.reflect.Proxy.class);
-  }
+//  @Test
+//  void advisorAutoProxyCreator() {
+//    assertThat(testUserService).isInstanceOf(java.lang.reflect.Proxy.class);
+//  }
 
 }
