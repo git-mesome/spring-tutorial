@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -20,6 +21,7 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static tobyspring.vol1.service.DefaultUserLevelUpgradePolicy.MIN_LOGCOUNT_FOR_SILVER;
 import static tobyspring.vol1.service.DefaultUserLevelUpgradePolicy.MIN_RECOMMEND_FOR_GOLD;
@@ -161,6 +163,15 @@ class UserServiceTest {
 
   }
 
+  @Test
+  public void readOnlyTransactionAttribute() {
+
+    assertThrows(UncategorizedSQLException.class, () ->{
+      testUserService.getAll();
+    });
+
+  }
+
   static class TestUserServiceImpl extends UserServiceImpl {
 
     public void upgradeLevels() {
@@ -168,6 +179,13 @@ class UserServiceTest {
         throw new TestUserServiceException();
       }
       super.upgradeLevels();  // Call the original method
+    }
+
+    public List<User> getAll() {
+      for (User user : super.getAll()) {
+        super.update(user);
+      }
+      return null;
     }
 
   }
